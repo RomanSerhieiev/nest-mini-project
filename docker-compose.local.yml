@@ -1,0 +1,38 @@
+## Docker Compose file for the Nest mini project API in development
+services:
+  postgres:
+    image: postgres:16.1
+    ports:
+      - '${POSTGRES_PORT:-5433}:5432'
+    environment:
+      POSTGRES_USER: '${POSTGRES_USER:-user}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-pass}'
+      POSTGRES_DB: '${POSTGRES_DB:-nest-mini-project}'
+    volumes:
+      - ./docker-postgres:/var/lib/postgresql/nest-mini-project
+    restart: unless-stopped
+
+  redis:
+    image: redis
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    command: >
+      --requirepass '${REDIS_PASSWORD:-redispass}'
+    restart: unless-stopped
+
+  s3:
+    image: quay.io/minio/minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    ports:
+      - "8000:9000"
+      - "8001:9001"
+    volumes:
+      - ./docker-s3:/usr/src/app/s3
+    environment:
+      MINIO_ROOT_USER: '${AWS_ACCESS_KEY_ID:-user}'
+      MINIO_ROOT_PASSWORD: '${AWS_SECRET_ACCESS_KEY:-password}'
+
+volumes:
+  docker-postgres:
+  docker-s3:
